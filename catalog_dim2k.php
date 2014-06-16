@@ -1,5 +1,5 @@
 <?php
-define('_PAGE_SIZE',4);
+define('_PAGE_SIZE',5);
 
 /**
 *Получает базу данных и сохранает её в массив
@@ -15,9 +15,9 @@ function get_db () {
 *@param CONSTANT $pageSize
 *@return int
 */
-function get_page_num ($db, $pageSize) {
+function get_page_num ($db) {
 	$dbSize = count($db);
-	$pageNum = $dbSize/$pageSize;
+	$pageNum = $dbSize/_PAGE_SIZE;
 	return ((int)$pageNum == $pageNum) ? $pageNum : (int)ceil($pageNum);
 }
 
@@ -27,29 +27,40 @@ function get_page_num ($db, $pageSize) {
 *@param CONSTANT $pageSize
 *@return string
 */
-function page_get_content ($db, $pageSize) {
-	global $html;
+function page_get_content ($db) {
 	isset($_GET['page']) ? $page = $_GET['page'] : $page = 1;
-	$startIndex = ($page - 1)*$pageSize;
-	$pageItems = array_slice($db, $startIndex, $pageSize);
-
+	$startIndex = ($page - 1)*_PAGE_SIZE;
+	$pageItems = array_slice($db, $startIndex, _PAGE_SIZE);
+	$html = "";
 	for ($i=0; $i < count($pageItems) ; $i++) { 
 		$tmp = explode(';', $pageItems[$i]);
 		$html .= $tmp[0]." ".$tmp[1]." ".$tmp[2]."<br>";
-		unset($tmp);
 	}
+	unset($tmp);
+	return $html;
 }
 
 /**
 *Выводит пагинатор
-*@param ште $pageNum
+*@param int $pageNum
 *@return string
 */
 function get_paginator ($pageNum) {
-	global $html;
+	$html = "";
 	for ($i=1; $i <= $pageNum; $i++) { 
-		$html .= "<a href=\"?page=$i\">".$i."</a><br>";
+		$html .= "<a href=\"?page=$i\">$i</a><br>";
 	}
+	return $html;
+}
+
+/**
+*Формирует готовую страницу для вывода
+*@param string $currentPageContent
+*@param string $paginator
+*@return string
+*/
+function html($currentPageContent, $paginator) {
+	return $currentPageContent.$paginator;
 }
 
 
@@ -57,13 +68,13 @@ function get_paginator ($pageNum) {
 $db = get_db ();
 
 //получаем кол-во страниц
-$pageNum = get_page_num ($db, _PAGE_SIZE);
+$pageNum = get_page_num ($db);
 
 //выводим содержимое текущей страницы
-page_get_content ($db, _PAGE_SIZE);
+$currentPageContent = page_get_content ($db);
 
 //выводим пагинатор
-get_paginator ($pageNum);
+$paginator = get_paginator ($pageNum);
 
 //выводим всю страницу
-echo $html;
+echo html ($currentPageContent, $paginator);
