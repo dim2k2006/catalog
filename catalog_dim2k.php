@@ -59,7 +59,7 @@ function get_paginator ($pageNum) {
 *@param string $paginator
 *@return string
 */
-function html($currentPageContent, $paginator) {
+function html ($currentPageContent, $paginator) {
 	return $currentPageContent.$paginator;
 }
 
